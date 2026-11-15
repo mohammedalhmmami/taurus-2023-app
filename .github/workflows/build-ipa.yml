@@ -12,10 +12,14 @@ jobs:
         run: unzip -o taurus-2023-app.zip
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer || sudo xcode-select -p
+      - name: List schemes
+        run: |
+          cd taurus-2023-app
+          xcodebuild -list -project Taurus2023.xcodeproj
       - name: Build app (no signing)
         run: |
           cd taurus-2023-app
-          xcodebuild -project Taurus2023.xcodeproj -target Taurus2023 -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -derivedDataPath DerivedData
+          xcodebuild -project Taurus2023.xcodeproj -scheme Taurus2023 -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -derivedDataPath DerivedData
       - name: Package IPA
         run: |
           cd taurus-2023-app
