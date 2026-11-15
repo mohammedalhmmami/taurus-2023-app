@@ -8,27 +8,38 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Unzip project
-        run: unzip -o taurus-2023-app.zip
+
+      - name: Show Xcode version
+        run: |
+          xcodebuild -version
+          xcode-select -p
+
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer || sudo xcode-select -p
-      - name: List schemes
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer || sudo xcode-select -s "$(xcode-select -p)"
+          xcodebuild -version
+
+      - name: Unzip project
+        run: |
+          unzip -o taurus-2023-app.zip
+          ls -la taurus-2023-app
+
+      - name: Build app (no signing, no scheme)
         run: |
           cd taurus-2023-app
-          xcodebuild -list -project Taurus2023.xcodeproj
-      - name: Build app (no signing)
-        run: |
-          cd taurus-2023-app
-          xcodebuild -project Taurus2023.xcodeproj -scheme Taurus2023 -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -derivedDataPath DerivedData
+          xcodebuild -project Taurus2023.xcodeproj -target Taurus2023 -configuration Release -sdk iphoneos CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO -derivedDataPath DerivedData
+
       - name: Package IPA
         run: |
           cd taurus-2023-app
           APP=$(find DerivedData/Build/Products/Release-iphoneos -maxdepth 1 -name "*.app" | head -n 1)
+          test -n "$APP" || { echo "ERROR: no .app found in DerivedData"; find DerivedData -maxdepth 4 -type d | head -20; exit 1; }
           echo "APP=$APP"
           mkdir -p Payload
           cp -r "$APP" Payload/
           zip -r ../Taurus2023-unsigned.ipa Payload
           ls -lh ../Taurus2023-unsigned.ipa
+
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
