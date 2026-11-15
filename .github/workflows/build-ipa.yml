@@ -20,6 +20,12 @@ jobs:
         run: |
           unzip -o taurus-2023-app.zip
           ls -la taurus-2023-app
+      - name: Validate project
+        run: |
+          cd taurus-2023-app
+          plutil -lint Taurus2023.xcodeproj/project.pbxproj
+          plutil -lint Taurus2023/Info.plist
+          xcodebuild -list -project Taurus2023.xcodeproj
       - name: Build app (no signing)
         run: |
           cd taurus-2023-app
